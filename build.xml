@@ -41,7 +41,7 @@
       <arg line="add Kickstarter_lib.jar"/>
     </exec>    
     <exec executable="git" dir="${site}">
-      <arg line="commit Kickstarter_lib.jar -m 'published comp from build.xml'"/>
+      <arg line="commit Kickstarter_lib.jar -m 'published kickstarter from build.xml'"/>
     </exec>        
     <exec executable="git" dir="${site}">
       <arg line="push"/>
