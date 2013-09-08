@@ -8,12 +8,12 @@ import org.junit.runners.*;
 import se.tube42.ks.utils.*;
 
 @RunWith(JUnit4.class)
-public class TestSimpleList
+public class TestKSList
 {
     
     @Test public void test() 
     {
-        SimpleList<Object> sl = new SimpleList<Object>();
+        KSList<Object> sl = new KSList<Object>();
         
         Object [] data = new Object[4];
         for(int i = 0; i < data.length; i++) 
@@ -58,7 +58,7 @@ public class TestSimpleList
     @Test public void testGrow() 
     {
         final int cnt = 10000;
-        SimpleList<Integer> sl = new SimpleList<Integer>();
+        KSList<Integer> sl = new KSList<Integer>();
         
         for(int i = 0; i < cnt; i++)
             sl.add( new Integer(i));

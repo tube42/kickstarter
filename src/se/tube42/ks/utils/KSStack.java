@@ -2,13 +2,13 @@
 package se.tube42.ks.utils;
 
 
-public class SimpleStack<T>
+public class KSStack<T>
 {
-    private SimpleList<T> stack;
+    private KSList<T> stack;
     
-    public SimpleStack()
+    public KSStack()
     {
-        this.stack = new SimpleList<T>();
+        this.stack = new KSList<T>();
     }
     
     

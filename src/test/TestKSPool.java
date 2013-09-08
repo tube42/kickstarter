@@ -8,12 +8,12 @@ import org.junit.runners.*;
 import se.tube42.ks.utils.*;
 
 @RunWith(JUnit4.class)
-public class TestSimplePool
+public class TestKSPool
 {
     
     @Test public void test() 
     {
-        SimplePool<Integer> sp = new SimplePool<Integer>() {  
+        KSPool<Integer> sp = new KSPool<Integer>() {  
             public int cnt = 0;
             public Integer createNew() { return new Integer(cnt++); }
         };

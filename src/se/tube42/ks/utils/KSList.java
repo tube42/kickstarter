@@ -11,12 +11,12 @@ import java.lang.reflect.Array;
  * direct access to the [] array :)
  */
 
-public class SimpleList<T>
+public class KSList<T>
 {
     private T [] data;
     private int size;
     
-    public SimpleList()
+    public KSList()
     {
         this.data = null;
         this.size = 0;

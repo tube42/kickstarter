@@ -8,12 +8,12 @@ import org.junit.runners.*;
 import se.tube42.ks.utils.*;
 
 @RunWith(JUnit4.class)
-public class TestSimpleStack
+public class TestKSStack
 {
     
     @Test public void test() 
     {
-        SimpleStack<Integer> ss = new SimpleStack<Integer>();
+        KSStack<Integer> ss = new KSStack<Integer>();
         
         // 
         Assert.assertEquals("empty at start",  0, ss.getSize());

@@ -2,17 +2,17 @@
 package se.tube42.ks.utils;
 
 
-public abstract class SimplePool<T>
+public abstract class KSPool<T>
 {    
-    private SimpleStack<T> stack;
+    private KSStack<T> stack;
     private int max_size;
     
-    public SimplePool()
+    public KSPool()
     {
         init(Integer.MAX_VALUE);
     }
     
-    public SimplePool(int max_size)
+    public KSPool(int max_size)
     {
         init(max_size);
     }
@@ -20,7 +20,7 @@ public abstract class SimplePool<T>
     //     
     private void init(int max_size)
     {        
-        this.stack = new SimpleStack<T>();
+        this.stack = new KSStack<T>();
         this.max_size = max_size;
     }
     
