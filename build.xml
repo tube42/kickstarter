@@ -3,6 +3,10 @@
   <property name="build" location="build"/>
   <property name="site" location="../tube42.github.io/ks/bin" />
   
+  <!-- use 1.6 for Android compatibility -->  
+  <property name="ant.build.javac.target" value="1.6" />
+  <property name="ant.build.javac.source" value="1.6" />
+  
   <target name="init">
     <tstamp/>
     <mkdir dir="${build}"/>
