@@ -66,7 +66,6 @@ import se.tube42.ks.utils.*;
 @RunWith(JUnit4.class)
 public class TestJobManager
 {
-            
     @Test public void testMessageAdd() 
     {        
         DummyListener dl1 = new DummyListener(1, 11, new Object(), new Object());
@@ -178,8 +177,7 @@ public class TestJobManager
         jm.update(1000);
         jm.update(1000);
         Assert.assertEquals("DR1 final state", dr1.count, 3);
-        Assert.assertEquals("DR2 final state", dr2.count, 1);
-        
+        Assert.assertEquals("DR2 final state", dr2.count, 1);        
     }
         
     
@@ -216,6 +214,26 @@ public class TestJobManager
         
         jm.update(1000);        
         Assert.assertEquals("DC1 repeat state", dc1.count, 2);        
+    }
+    
+    @Test public void testTail()
+    {
+        JobManager jm = new JobManager();        
+        DummyCustom dc1 = new DummyCustom(false);
+        DummyCustom dc2 = new DummyCustom(false);
+        DummyCustom dc3 = new DummyCustom(false);
+        
+        // 
+        jm.add(dc1, 200).tail(dc2, 300).tail(dc3, 400);
+        
+        for(int i = 0; i < 30; i++) {
+            int t = 50 * i;
+            Assert.assertEquals("DC1 repeat state", dc1.count, t < 200 ? 0 : 1);
+            Assert.assertEquals("DC2 repeat state", dc2.count, t < 500 ? 0 : 1);
+            Assert.assertEquals("DC3 repeat state", dc3.count, t < 900 ? 0 : 1);
+            jm.update(50); 
+            
+        }
     }
     
 }

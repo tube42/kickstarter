@@ -34,8 +34,7 @@ public final class JobManager
             long next = -1;
             if(!job.stop)
                 next = job.execute();
-            
-            
+                        
             // remove it from queue for now
             root = root.next;
             job.next = null;
@@ -43,16 +42,33 @@ public final class JobManager
             if(next > 0) {
                 job.time_start += next;
                 insert_job(job);
-            } else {
+            } else {                
                 if(job.type != Job.TYPE_USER) {
-                    job.reset();                    
+                    job.reset();              
                     pool.put(job);
+                } else {
+                    final Job tail = job.tail;
+                    if(tail != null) {
+                        Job tmp = tail.tail;
+                        add(tail, tail.time_tail);
+                        tail.tail = tmp;
+                    }
                 }
             }            
         }
     }
     
     // ------------------------------------------------------------------
+    
+    /**
+     * delete this job
+     */
+    public void remove(Job job) 
+    {
+        if(job == null) return;        
+        job.stop = true;
+    }
+    
     /**
      * delete all jobs associated with this callback
      */
@@ -100,8 +116,9 @@ public final class JobManager
     public Job add(Job job, long time_start) 
     {
         job.prepar_insert();        
-        job.time_start = Math.max(1, time_start) + time;
-        insert_job(job);        
+        job.time_start = Math.max(1, time_start) + time;        
+        job.tail = null;
+        insert_job(job);
         return job;        
     }
     
