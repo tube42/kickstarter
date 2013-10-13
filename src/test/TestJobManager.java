@@ -41,6 +41,27 @@ import se.tube42.ks.utils.*;
 }
 
 
+/* package */ class DummyCustom extends Job
+{
+    public int count = 0;    
+    public boolean custom_repeat;
+    
+    public DummyCustom(boolean custom_repeat)
+    {
+        this.custom_repeat = custom_repeat;
+    }
+    
+    public long execute()
+    {
+        this.count++;
+        
+        if(custom_repeat) 
+            return count * 10;
+        
+        return super.execute();        
+    }        
+}
+
 
 @RunWith(JUnit4.class)
 public class TestJobManager
@@ -142,7 +163,7 @@ public class TestJobManager
         JobManager jm = new JobManager();
         
         //
-        jm.add(dr1, 200, 100, 3);
+        jm.add(dr1, 200).repeat(3, 100);
         jm.add(dr2, 300);
         
         jm.update(199);
@@ -154,10 +175,47 @@ public class TestJobManager
         }        
         
         jm.update(1000);
+        jm.update(1000);
+        jm.update(1000);
         Assert.assertEquals("DR1 final state", dr1.count, 3);
         Assert.assertEquals("DR2 final state", dr2.count, 1);
         
     }
         
-     
+    
+    @Test public void testCustom() 
+    {
+        JobManager jm = new JobManager();        
+        DummyCustom dc1 = new DummyCustom(false);
+        DummyCustom dc2 = new DummyCustom(true);
+        
+        // 
+        jm.add(dc1, 200).repeat(2, 1000);
+        jm.add(dc2, 200);
+        
+        
+        jm.update(200);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 1);
+        Assert.assertEquals("DC2 repeat state", dc2.count, 1);
+        
+        jm.update(10);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 1);
+        Assert.assertEquals("DC2 repeat state", dc2.count, 2);
+        
+        jm.update(20);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 1);
+        Assert.assertEquals("DC2 repeat state", dc2.count, 3);
+        
+        jm.update(30);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 1);
+        Assert.assertEquals("DC2 repeat state", dc2.count, 4);
+        
+        
+        jm.update(1000);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 2);
+        
+        jm.update(1000);        
+        Assert.assertEquals("DC1 repeat state", dc1.count, 2);        
+    }
+    
 }

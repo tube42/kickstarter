@@ -22,6 +22,11 @@ public class KSList<T>
         this.size = 0;
     }
     
+    public final void add(T [] ts)
+    {
+        for(T t : ts) add(t);
+    }
+    
     public final void add(T s)
     {
         if(data == null) {

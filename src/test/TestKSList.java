@@ -54,6 +54,25 @@ public class TestKSList
                 
     }
     
+    @Test public void testAddArray() 
+    {
+        KSList<Object> sl = new KSList<Object>();
+        
+        Object [] data = new Object[4];
+        for(int i = 0; i < data.length; i++) 
+            data[i] = new Object();
+        
+        Assert.assertEquals("Empty at start", 0, sl.getSize());
+        
+        // 
+        sl.add(data);
+        Assert.assertEquals("correct number of elements",
+                  data.length, sl.getSize());
+        
+        for(int i = 0; i < data.length; i++)
+            Assert.assertEquals("Element i", data[i], sl.get(i));
+    }
+        
     
     @Test public void testGrow() 
     {
