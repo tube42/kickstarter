@@ -1,6 +1,9 @@
 
 package se.tube42.ks.utils;
 
+/**
+ * generic stack
+ */
 
 public class KSStack<T>
 {
@@ -11,28 +14,29 @@ public class KSStack<T>
         this.stack = new KSList<T>();
     }
     
-    
+    /** push item to the stack */
     public final void push(T s)
     {
         stack.add(s);
     }
     
+    /** pop item. returns null if stack is empty */
     public final T pop()
     {
-        final int size = stack.getSize();
-        if(size == 0) return null;
-        
-        T ret = stack.get(size-1);
-        stack.remove(size-1);
+        final int pos = stack.getSize() - 1;
+        final T ret = stack.get(pos);
+        if(pos >= 0) stack.remove(pos);        
         return ret;
     }
     
+    /** return peek of stack, null if empty */
     public final T peek()
     {
-        final int size = stack.getSize();
-        return (size == 0) ? null : stack.get(size-1);
+        final int pos = stack.getSize() - 1;
+        return stack.get(pos);
     }
     
+    /** return size of the stack */
     public final int getSize()
     {
         return stack.getSize();

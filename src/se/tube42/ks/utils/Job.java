@@ -1,5 +1,9 @@
 package se.tube42.ks.utils;
 
+/**
+ * This class represents a Job. 
+ * You can create a custom job by overriding execute()
+ */
 
 public class Job
 {
@@ -49,13 +53,17 @@ public class Job
     
     // -------------------------------------------
     
-    public void stop()
+    /** stop this job */
+    public final void stop()
     {
         this.stop = true;
     }
     
-    /** configure repeat */
-    public void repeat(int count, long time)
+    /** 
+     * configure repeat, works only if you don't modify
+     * the value returned by execute()
+     */
+    public final void repeat(int count, long time)
     {
         this.count_repeat = Math.max(1, count);
         this.time_repeat = Math.max(1, time);
@@ -66,7 +74,7 @@ public class Job
      * Note that this job will start exactly AFTER the current job, 
      * i.e. timing error (jitter) of the current job is forwarded.
      */
-    public Job tail(Job j, long time)
+    public final Job tail(Job j, long time)
     {
         if(type == TYPE_USER) {
             j.time_tail = time;
@@ -93,5 +101,5 @@ public class Job
         }
                 
         return count_repeat-- > 1 ? time_repeat : -1;
-    }    
+    }
 }

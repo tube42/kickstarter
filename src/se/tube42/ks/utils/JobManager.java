@@ -5,6 +5,7 @@ package se.tube42.ks.utils;
     public Job createNew() { return new Job(); }
 }
 
+
 /**
  * JobManager is a class for scheduling jobs to be run
  * at some point in future
@@ -14,7 +15,11 @@ public final class JobManager
 {
     private final JobPool pool = new JobPool();
     
+    /**
+     * when enabled is false, the job manager is paused and no jobs will be dispatched
+     */
     public boolean enabled = true;    
+    
     private long time;
     private Job root = null;
     
@@ -23,6 +28,10 @@ public final class JobManager
         time = 0;
     }
     
+    /**
+     * service function for the manager.
+     * call it in your game loop with the frame time in [ms] as argument
+     */
     public void update(long dt)
     {
         if(!enabled) return;
@@ -63,7 +72,7 @@ public final class JobManager
     /**
      * delete this job
      */
-    public void remove(Job job) 
+    public final void remove(Job job) 
     {
         if(job == null) return;        
         job.stop = true;
@@ -72,7 +81,7 @@ public final class JobManager
     /**
      * delete all jobs associated with this callback
      */
-    public void remove(Runnable callback) 
+    public final void remove(Runnable callback) 
     {
         if(callback == null) return;
         
@@ -86,7 +95,7 @@ public final class JobManager
     /**
      * delete all jobs associated with this listener
      */
-    public void remove(MessageListener ml) 
+    public final void remove(MessageListener ml) 
     {
         if(ml == null) return;
         
@@ -100,7 +109,7 @@ public final class JobManager
     /**
      * delete all jobs associated with this listener and message
      */
-    public void remove(MessageListener ml, int msg) 
+    public final void remove(MessageListener ml, int msg) 
     {
         if(ml == null) return;
         
@@ -113,7 +122,11 @@ public final class JobManager
     
     // ------------------------------------------------------------------
     
-    public Job add(Job job, long time_start) 
+    /**
+     * Add a Job (possibly a custom job)
+     */
+    
+    public final Job add(Job job, long time_start) 
     {
         job.prepar_insert();        
         job.time_start = Math.max(1, time_start) + time;        
@@ -121,14 +134,11 @@ public final class JobManager
         insert_job(job);
         return job;        
     }
-    
-    // -------------------------------------------------------------------------
-    
+        
     /**
-     * run Runnable after time delay
-     */
-    
-    public Job add(Runnable callback, long time) 
+     * RUN-JOB: run Runnable after time delay
+     */    
+    public final Job add(Runnable callback, long time) 
     {        
         Job job = pool.get();        
         job.type = Job.TYPE_RUNNABLE;
@@ -136,10 +146,8 @@ public final class JobManager
         return add(job, time);
     }	
     
-    // -------------------------------------------------------------------------
-    
     /**
-     * send msg to ml after time delay
+     * MESSAGE-JOB: send msg to ml after time delay
      */
     public void add(MessageListener ml, long time, int msg)
     {
@@ -147,12 +155,11 @@ public final class JobManager
     }	
     
     /**
-     * send <msg, data0, data1> from sender to ml after time delay 
+     * MESSAGE-JOB: send <msg, data0, data1> from sender to ml after time delay 
      */
     public Job add(MessageListener ml, long time, 
               int msg, int data0, Object data1, Object sender)
-    {
-        
+    {        
         Job job = pool.get();        
         job.type = Job.TYPE_MESSAGE;        
         job.listener = ml;
@@ -186,4 +193,5 @@ public final class JobManager
             job.next = curr;
         }
     }
+    
 }

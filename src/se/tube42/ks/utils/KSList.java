@@ -5,10 +5,10 @@ import java.util.*;
 import java.lang.reflect.Array;
 
 /**
- * Simple self-growing array.
+ * KSList is a self-growing list that allows you to directly access 
+ * the native [] array for best performance.
  * 
- * The only reason we have implemented this is to have 
- * direct access to the [] array :)
+ * NOTE that the list is NOT ordered and will be reorganised at will
  */
 
 public class KSList<T>
@@ -22,11 +22,13 @@ public class KSList<T>
         this.size = 0;
     }
     
+    /** add all items to this list */
     public final void add(T [] ts)
     {
         for(T t : ts) add(t);
     }
     
+    /** add item to the end of this list - O(1) */
     public final void add(T s)
     {
         if(data == null) {
@@ -39,6 +41,10 @@ public class KSList<T>
         data[size++] = s;
     }
     
+    /** 
+     * remove item at this index from the list - O(1).
+     * NOTE: this will re-arrange the list
+     */
     public final void remove(int index)
     {
         if(index < 0 || index >= size) return;
@@ -48,16 +54,19 @@ public class KSList<T>
             data[index] = data[size];
     }
     
+    /** return size of the list */
     public final int getSize()
     {
         return size;
     }
     
+    /** return the list representing all items (note: use getSize() instead of getAll().length ) */
     public final T[] getAll()
     {
         return data;
     }
     
+    /** return item at index or null if out of range - O(1) */
     public final T get(int index)
     {
         return index < 0 || index >= size ? null : data[index];
