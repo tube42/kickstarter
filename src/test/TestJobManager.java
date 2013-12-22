@@ -45,20 +45,21 @@ import se.tube42.ks.utils.*;
 {
     public int count = 0;    
     public boolean custom_repeat;
+    public long error;
     
     public DummyCustom(boolean custom_repeat)
     {
         this.custom_repeat = custom_repeat;
     }
     
-    public long execute()
+    public long execute(long error)
     {
         this.count++;
-        
+        this.error = error;
         if(custom_repeat) 
             return count * 10;
         
-        return super.execute();        
+        return super.execute(error);
     }        
 }
 
@@ -234,6 +235,23 @@ public class TestJobManager
             jm.update(50); 
             
         }
+    }
+    
+    @Test public void testError()
+    {
+        JobManager jm = new JobManager();        
+        DummyCustom dc1 = new DummyCustom(false);
+        DummyCustom dc2 = new DummyCustom(false);
+        
+        jm.add(dc1, 100);
+        jm.add(dc2, 200);
+        
+        jm.update(50);  // 50
+        jm.update(100); // 150
+        jm.update(60);  // 210
+        
+        Assert.assertEquals("DC1 timing error", dc1.error, 50);
+        Assert.assertEquals("DC2 timing error", dc2.error, 10);
     }
     
 }

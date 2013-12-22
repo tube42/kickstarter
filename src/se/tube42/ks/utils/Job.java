@@ -16,7 +16,8 @@ public class Job
     /* package */ int type = TYPE_USER;
     /* package */ boolean stop;    
     /* package */ Job next, tail;
-    /* package */ long time_start, time_tail;  
+    /* package */ long time_start, time_tail, time_frame;
+    
     private int count_repeat;
     private long time_repeat;
     
@@ -85,9 +86,10 @@ public class Job
         
     /** 
      * override this in your code. 
-     * return the time [ms] to next call or a negative number to quite
+     * @return time [ms] to next call or a negative number to quite.
+     * @param dt_error timing difference between requested release time and actual time    
      */
-    public long execute()
+    public long execute(long dt_error)
     {        
         switch(type) {
         case Job.TYPE_MESSAGE:

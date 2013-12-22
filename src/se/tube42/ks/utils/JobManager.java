@@ -42,14 +42,14 @@ public final class JobManager
             Job job = root;
             long next = -1;
             if(!job.stop)
-                next = job.execute();
-                        
+                next = job.execute(time - job.time_start);
+            
             // remove it from queue for now
             root = root.next;
             job.next = null;
                         
             if(next > 0) {
-                job.time_start += next;
+                job.time_start = Math.max(time + 1, job.time_start + next);
                 insert_job(job);
             } else {                
                 if(job.type != Job.TYPE_USER) {
@@ -174,7 +174,10 @@ public final class JobManager
     // --------------------------------------------------
     
     private void insert_job(Job job)
-    {        
+    {   
+        // record current frame time
+        job.time_frame = job.time_start - time;
+        
         // insert it somewhere in the list
         if(root == null) {
             job.next = null;

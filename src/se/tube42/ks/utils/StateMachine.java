@@ -1,0 +1,92 @@
+package se.tube42.ks.utils;
+
+/**
+ * This class represents a state machine, which is a job with states
+ */
+
+public abstract class StateMachine extends Job
+{
+    protected int state;
+    private long time_total, time_state;
+    private int events;
+    
+    public StateMachine()
+    {
+        reset();
+    }
+    
+    /**
+     * Reset the state machine to its initial state 
+     */
+    public void reset()
+    {
+        time_total = time_state = 0;
+        state = 0;
+        events = 0;
+    }
+    
+    /**
+     * @return state of the machine
+     */
+    public int getState()
+    {
+        return state;
+    }
+        
+    public final long execute(long dt_error )
+    {
+        int old_state = state;
+        
+        long dt = dt_error + time_frame;
+        time_state += dt;
+        time_total += dt;
+        
+        long ret = update(time_total, time_state, dt);
+        
+        if(state != old_state) {
+            time_state = 0;
+        }
+                
+        return ret;        
+    }
+    
+    /**
+     * Fire an event, to be handled by the state machine 
+     * at some later point (if ever)
+     * @param event the event to fire
+     */
+    
+    public final void fire(int event)
+    {
+        events |= 1 << event;
+    }
+    
+    /**
+     * Check if an event is fired. 
+     * Will clear the event after checking it!
+     * @return true if the event has been fired
+     * @param event the event to check
+     */
+    protected final boolean check(int event)
+    {
+        int x = 1 << event;        
+        
+        if( (events & x) != 0) {
+            events &= ~x;
+            return true;
+        }
+        return false;
+    }
+    
+    
+    /**
+     * update the state machine, with the following time steps 
+     * (if time is needed)
+     * @param time_all total time for this machine
+     * @param time_state total time in this state
+     * @param dt time for this frame
+     * @return time to next update, zero or negative to end execution
+     */
+    public abstract long update(long time_all, long time_state, long dt);
+    
+}
