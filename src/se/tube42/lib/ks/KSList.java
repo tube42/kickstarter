@@ -1,5 +1,4 @@
-
-package se.tube42.ks.utils;
+package se.tube42.lib.ks;
 
 import java.util.*;
 import java.lang.reflect.Array;

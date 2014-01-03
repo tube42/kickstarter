@@ -1,4 +1,4 @@
-package se.tube42.ks.utils;
+package se.tube42.lib.ks;
 
 /**
  * This class represents a state machine, which is a job with states

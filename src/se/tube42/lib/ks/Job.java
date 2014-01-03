@@ -1,4 +1,4 @@
-package se.tube42.ks.utils;
+package se.tube42.lib.ks;
 
 /**
  * This class represents a Job. 
@@ -23,7 +23,7 @@ public class Job
     
     // Message jobs:
     /* package */ MessageListener listener;
-    /* package */ int msg, data0;;
+    /* package */ int msg, data0;
     /* package */ Object sender, data1;
     
     // Runable

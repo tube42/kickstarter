@@ -1,4 +1,4 @@
-package se.tube42.ks.utils;
+package se.tube42.lib.ks;
 
 /**
  * Simple message listener interface

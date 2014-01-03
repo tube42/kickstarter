@@ -1,11 +1,12 @@
 
-package test;
+package se.tube42.test;
 
 import org.junit.*;
 import org.junit.runner.*;
 import org.junit.runners.*;
 
-import se.tube42.ks.utils.*;
+import se.tube42.lib.ks.*;
+
 
 @RunWith(JUnit4.class)
 public class TestKSStack

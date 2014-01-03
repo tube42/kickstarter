@@ -17,9 +17,12 @@
   </target>
   
   <target name="dist" depends="compile" >
-    <jar jarfile="Kickstarter_lib.jar" basedir="${build}" includes="se/tube42/ks/**" />
+    <jar jarfile="Kickstarter_lib.jar" basedir="${build}" includes="se/tube42/lib/ks/**" />
   </target>
   
+  <target name="doc" depends="compile" >
+    <javadoc sourcepath="${src}" destdir="docs" packagenames="se.tube42.lib.ks.*" />
+  </target>
   
   <target name="test" depends="compile" >    
        
@@ -29,15 +32,11 @@
       <formatter type="brief" usefile="false" />
       
       <batchtest fork="no" todir="${build}">
-        <fileset dir="${src}" includes="test/**/*.java" />            
+        <fileset dir="${src}" includes="se/tube42/test/**/*.java" />            
       </batchtest>  
     </junit>       
   </target>
-      
-  <target name="doc" depends="compile" >
-    <javadoc sourcepath="src" destdir="docs" packagenames="se.tube42.ks.*" />
-  </target>
-  
+        
  <!-- create a new jar file and upload it to github -->
   <target name="publish" depends="dist" >
     <copy file="Kickstarter_lib.jar" todir="${site}"/>    
