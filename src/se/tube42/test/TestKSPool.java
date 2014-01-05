@@ -43,9 +43,53 @@ public class TestKSPool
         
         Assert.assertEquals("5th element",  2, i4.intValue() );
         Assert.assertEquals("6th element",  0, i5.intValue() );
-        Assert.assertEquals("7th element",  3, i6.intValue() );
-        
-        
+        Assert.assertEquals("7th element",  3, i6.intValue() );                
     }
-     
+    
+    @Test public void testStats() 
+    {
+        Object [] tmp = new Object[10];
+        
+        KSPool<Object> pool = new KSPool<Object>() {  
+            public Object createNew() { return new Object(); }
+        };
+        
+        
+        // init
+        Assert.assertEquals("pool get (0)", 0, pool.debugCountGet());
+        Assert.assertEquals("pool put (0)", 0, pool.debugCountPut());
+        Assert.assertEquals("pool new (0)", 0, pool.debugCountNew());        
+        
+        // first 10
+        for(int i = 0; i < tmp.length; i++)
+            tmp[i] = pool.get();
+        
+        Assert.assertEquals("pool get (1)", 10, pool.debugCountGet());
+        Assert.assertEquals("pool put (1)", 0, pool.debugCountPut());
+        Assert.assertEquals("pool new (1)", 10, pool.debugCountNew());        
+        
+        for(int i = 0; i < tmp.length; i++)
+            pool.put( tmp[i] );
+        
+        Assert.assertEquals("pool get (2)", 10, pool.debugCountGet());
+        Assert.assertEquals("pool put (2)", 10, pool.debugCountPut());
+        Assert.assertEquals("pool new (2)", 10, pool.debugCountNew());        
+        
+        
+        // next 10        
+        for(int i = 0; i < tmp.length; i++)
+            tmp[i] = pool.get();
+        
+        Assert.assertEquals("pool get (3)", 20, pool.debugCountGet());
+        Assert.assertEquals("pool put (3)", 10, pool.debugCountPut());
+        Assert.assertEquals("pool new (3)", 10, pool.debugCountNew());        
+        
+        for(int i = 0; i < tmp.length; i++)
+            pool.put( tmp[i] );
+        
+        Assert.assertEquals("pool get (4)", 20, pool.debugCountGet());
+        Assert.assertEquals("pool put (4)", 20, pool.debugCountPut());
+        Assert.assertEquals("pool new (4)", 10, pool.debugCountNew());        
+    }
+    
 }
