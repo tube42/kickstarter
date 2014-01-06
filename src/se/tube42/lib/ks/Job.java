@@ -1,19 +1,67 @@
 package se.tube42.lib.ks;
 
+/* package */ class RunnableJob extends Job
+{
+    
+    /* package */ Runnable callback;    
+    
+    public void set(Runnable callback) 
+    {
+        this.callback = callback;
+    }
+    public void reset()
+    {
+        this.callback = null;
+        super.reset();
+    }
+    
+    public long execute(long dt_error)
+    {        
+        callback.run();                
+        return super.execute(dt_error);
+    }    
+}
+
+/* package */ class  MessageJob extends Job
+{    
+    /* package */ MessageListener listener;
+    /* package */ int msg, data0;
+    /* package */ Object sender, data1;
+    
+    public void set(MessageListener listener, int msg, 
+              int data0, Object data1, Object sender) 
+    {
+        this.listener = listener;
+        this.msg = msg;
+        this.data0 = data0;
+        this.data1 = data1;
+        this.sender = sender;
+    }
+    
+    public void reset()
+    {
+        listener = null;
+        data1 = sender = null;
+        super.reset();
+    }
+    
+    public long execute(long dt_error)
+    {      
+        listener.onMessage(msg, data0, data1, sender);
+        return super.execute(dt_error);
+    }    
+}
+
+
+
 /**
  * This class represents a Job. 
  * You can create a custom job by overriding execute()
  */
 
 public class Job
-{
-    /* package */ final static int 
-          TYPE_MESSAGE = 0,
-          TYPE_RUNNABLE = 1,
-          TYPE_USER = 2;
-    
-    // shared for all
-    /* package */ int type = TYPE_USER;
+{    
+    /* package */ KSPool pool = null;   
     /* package */ boolean stop;    
     /* package */ Job next, tail;
     /* package */ long time_start, time_tail, time_frame;
@@ -21,18 +69,25 @@ public class Job
     private int count_repeat;
     private long time_repeat;
     
-    // Message jobs:
-    /* package */ MessageListener listener;
-    /* package */ int msg, data0;
-    /* package */ Object sender, data1;
-    
-    // Runable
-    /* package */ Runnable callback;    
-    
-    
     public Job() 
     { 
         reset();
+    }
+    
+    
+    // -------------------------------------------
+    /** 
+     * called when job is added to the manager
+     */
+    public void onAdd()
+    {
+    }
+    
+    /** 
+     * called when job is finished
+     */    
+    public void onFinish()
+    {
     }
     
     // -------------------------------------------
@@ -40,17 +95,11 @@ public class Job
     /* package */ void reset() 
     { 
         // clean up data and also help GC
-        callback = null;
-        listener = null;
-        sender = data1 = null;
         stop = false;
         tail = null;
+        repeat(0, 0);        
     }
     
-    /* package */ void prepar_insert()
-    {
-        repeat(0, 0);
-    }
     
     // -------------------------------------------
     
@@ -64,10 +113,11 @@ public class Job
      * configure repeat, works only if you don't modify
      * the value returned by execute()
      */
-    public final void repeat(int count, long time)
+    public final Job repeat(int count, long time)
     {
         this.count_repeat = Math.max(1, count);
         this.time_repeat = Math.max(1, time);
+        return this;
     }
     
     /**
@@ -77,9 +127,9 @@ public class Job
      */
     public final Job tail(Job j, long time)
     {
-        if(type == TYPE_USER) {
+        if(tail == null) {            
             j.time_tail = time;
-            this.tail = j;
+            tail = j;
         }
         return j;
     }
@@ -91,17 +141,6 @@ public class Job
      */
     public long execute(long dt_error)
     {        
-        switch(type) {
-        case Job.TYPE_MESSAGE:
-            listener.onMessage(msg, data0, data1, sender);
-            break;
-        case Job.TYPE_RUNNABLE:
-            callback.run();
-            break;
-        default:
-            // nothing
-        }
-                
         return count_repeat-- > 1 ? time_repeat : -1;
-    }
+    }              
 }

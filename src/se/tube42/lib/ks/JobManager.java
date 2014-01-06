@@ -1,10 +1,24 @@
 package se.tube42.lib.ks;
 
-/* package */ class JobPool extends KSPool<Job>
+/* package */ class RunnableJobPool extends KSPool<RunnableJob>
 {
-    public Job createNew() { return new Job(); }
+    public RunnableJob createNew() 
+    { 
+        RunnableJob ret = new RunnableJob();
+        ret.pool = this;
+        return ret;
+    }
 }
 
+/* package */ class MessageJobPool extends KSPool<MessageJob>
+{
+    public MessageJob createNew() 
+    { 
+        MessageJob ret = new MessageJob();
+        ret.pool = this;
+        return ret;
+    }
+}
 
 /**
  * JobManager is a class for scheduling jobs to be run
@@ -13,7 +27,8 @@ package se.tube42.lib.ks;
 
 public final class JobManager 
 {
-    private final JobPool pool = new JobPool();
+    private final RunnableJobPool run_pool = new RunnableJobPool();
+    private final MessageJobPool msg_pool = new MessageJobPool();
     
     /**
      * when enabled is false, the job manager is paused and no jobs will be dispatched
@@ -23,49 +38,15 @@ public final class JobManager
     private long time;
     private Job root = null;
     
+    /**
+     * reset time and start over, this will affect all pending jobs 
+     * (and probably create a mess)
+     */
     public void reset()
     {
         time = 0;
     }
     
-    /**
-     * service function for the manager.
-     * call it in your game loop with the frame time in [ms] as argument
-     */
-    public void update(long dt)
-    {
-        if(!enabled) return;
-        
-        time += dt;        
-        while(root != null && root.time_start <= time) {
-            // fire up the first from the queue:
-            Job job = root;
-            long next = -1;
-            if(!job.stop)
-                next = job.execute(time - job.time_start);
-            
-            // remove it from queue for now
-            root = root.next;
-            job.next = null;
-                        
-            if(next > 0) {
-                job.time_start = Math.max(time + 1, job.time_start + next);
-                insert_job(job);
-            } else {                
-                if(job.type != Job.TYPE_USER) {
-                    job.reset();              
-                    pool.put(job);
-                } else {
-                    final Job tail = job.tail;
-                    if(tail != null) {
-                        Job tmp = tail.tail;
-                        add(tail, tail.time_tail);
-                        tail.tail = tmp;
-                    }
-                }
-            }            
-        }
-    }
     
     // ------------------------------------------------------------------
     
@@ -74,64 +55,23 @@ public final class JobManager
      */
     public final void remove(Job job) 
     {
-        if(job == null) return;        
-        job.stop = true;
+        if(job != null)
+            job.stop = true;        
     }
     
-    /**
-     * delete all jobs associated with this callback
-     */
-    public final void remove(Runnable callback) 
-    {
-        if(callback == null) return;
-        
-        Job tmp = root;
-        while(tmp != null) {
-            if(tmp.callback == callback) tmp.stop = true;
-            tmp = tmp.next;
-        }
-    }
-    
-    /**
-     * delete all jobs associated with this listener
-     */
-    public final void remove(MessageListener ml) 
-    {
-        if(ml == null) return;
-        
-        Job tmp = root;
-        while(tmp != null) {
-            if(tmp.listener == ml) tmp.stop = true;
-            tmp = tmp.next;
-        }
-    }
-    
-    /**
-     * delete all jobs associated with this listener and message
-     */
-    public final void remove(MessageListener ml, int msg) 
-    {
-        if(ml == null) return;
-        
-        Job tmp = root;
-        while(tmp != null) {
-            if(tmp.listener == ml && tmp.msg == msg) tmp.stop = true;
-            tmp = tmp.next;
-        }
-    }
     
     // ------------------------------------------------------------------
     
     /**
      * Add a Job (possibly a custom job)
-     */
-    
+     */    
     public final Job add(Job job, long time_start) 
     {
-        job.prepar_insert();        
         job.time_start = Math.max(1, time_start) + time;        
         job.tail = null;
         insert_job(job);
+        
+        job.onAdd();
         return job;        
     }
         
@@ -140,18 +80,17 @@ public final class JobManager
      */    
     public final Job add(Runnable callback, long time) 
     {        
-        Job job = pool.get();        
-        job.type = Job.TYPE_RUNNABLE;
-        job.callback = callback;
-        return add(job, time);
+        RunnableJob job = run_pool.get();
+        job.set(callback);        
+        return add(job, time);        
     }	
     
     /**
      * MESSAGE-JOB: send msg to ml after time delay
      */
-    public void add(MessageListener ml, long time, int msg)
+    public Job add(MessageListener ml, long time, int msg)
     {
-        add(ml, time, msg, 0, null, null);
+        return add(ml, time, msg, 0, null, null);
     }	
     
     /**
@@ -160,14 +99,8 @@ public final class JobManager
     public Job add(MessageListener ml, long time, 
               int msg, int data0, Object data1, Object sender)
     {        
-        Job job = pool.get();        
-        job.type = Job.TYPE_MESSAGE;        
-        job.listener = ml;
-        job.msg = msg;
-        job.sender = sender;
-        job.data0 = data0;
-        job.data1 = data1;
-        job.callback = null;        
+        MessageJob job = msg_pool.get();        
+        job.set(ml, msg, data0, data1, sender);
         return add(job, time);
     }
     
@@ -197,4 +130,60 @@ public final class JobManager
         }
     }
     
+    /**
+     * service function for the manager.
+     * call it in your game loop with the frame time in [ms] as argument
+     */
+    public void service(long dt)
+    {
+        if(!enabled) return;
+        
+        time += dt;        
+        while(root != null && root.time_start <= time) {
+            // fire up the first from the queue:
+            Job job = root;
+            long next = -1;
+            
+            if(!job.stop)
+                next = job.execute(time - job.time_start);            
+            
+            boolean stop = job.stop; // save it for now
+            // remove it from queue for now
+            root = root.next;
+            job.next = null;
+            
+            if(next > 0) {
+                job.time_start = Math.max(time + 1, job.time_start + next);
+                insert_job(job);
+            } else {
+                // call onFinish
+                job.onFinish();
+                
+                // insert possible tail
+                final Job tail = job.tail;
+                
+                if(tail != null) {
+                    // remember old data
+                    final Job tmp = tail.tail;
+                    stop |= tail.stop;
+                    
+                    // add
+                    add(tail, tail.time_tail);
+                    
+                    // re-insert old stuff
+                    tail.tail = tmp;
+                    tail.stop = stop;
+                }
+                
+                // reset used job
+                job.reset();                
+                
+                // return back to pool?
+                if(job.pool != null) 
+                    job.pool.put(job);
+                
+            }            
+        }
+    }
+ 
 }

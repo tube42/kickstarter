@@ -1,7 +1,11 @@
 package se.tube42.lib.ks;
 
 /**
- * This class represents a state machine, which is a job with states
+ * This class represents a state machine, which is a job with states.
+ * 
+ * NOTE: when you add this class to a JobManager,
+ * it will reset state, time countners and all events to zero.
+ * @see #onAdd()
  */
 
 public abstract class StateMachine extends Job
@@ -12,17 +16,30 @@ public abstract class StateMachine extends Job
     
     public StateMachine()
     {
-        reset();
+        init(true);
     }
     
     /**
      * Reset the state machine to its initial state 
      */
-    public void reset()
-    {
+    public void init(boolean reset)
+    {        
         time_total = time_state = 0;
         state = 0;
-        events = 0;
+        
+        if(reset) {
+            events = 0;
+            reset();
+        }
+    }
+    
+    /**
+     * Called when inserted into the managers queue.
+     * It will cause the state machine to reset to its initial state
+     */    
+    public final void onAdd()
+    {
+        init(false);
     }
     
     /**
@@ -87,6 +104,5 @@ public abstract class StateMachine extends Job
      * @param dt time for this frame
      * @return time to next update, zero or negative to end execution
      */
-    public abstract long update(long time_all, long time_state, long dt);
-    
+    public abstract long update(long time_all, long time_state, long dt);        
 }
