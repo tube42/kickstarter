@@ -11,6 +11,7 @@ package se.tube42.lib.ks;
 public abstract class StateMachine extends Job
 {
     protected int state;
+    private int old_state;
     private long time_total, time_state;
     private int events;
     
@@ -26,6 +27,7 @@ public abstract class StateMachine extends Job
     {        
         time_total = time_state = 0;
         state = 0;
+        old_state = -1;
         
         if(reset) {
             events = 0;
@@ -52,19 +54,16 @@ public abstract class StateMachine extends Job
         
     public final long execute(long dt_error )
     {
-        int old_state = state;
-        
-        long dt = dt_error + time_frame;
-        time_state += dt;
-        time_total += dt;
-        
-        long ret = update(time_total, time_state, dt);
-        
         if(state != old_state) {
-            time_state = 0;
+            old_state = state;
+            time_state = 0;            
         }
                 
-        return ret;        
+        final long dt = dt_error + time_frame;
+        time_state += dt;
+        time_total += dt;
+                
+        return update(time_total, time_state, dt);
     }
     
     /**
