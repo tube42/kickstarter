@@ -32,6 +32,24 @@ import se.tube42.lib.ks.*;
     }            
 }
 
+/* package */ class RemoveListener implements MessageListener
+{    
+    public JobManager jm;
+    public int count = 0;
+    public RemoveListener(JobManager jm)
+    {
+        this.jm = jm;
+        this.count = 0;
+    }
+    
+    public void onMessage(int msg, int data0, Object data1, Object sender)
+    {
+        jm.remove( (Job) data1);
+        count++;
+    }            
+}
+
+
 /* package */ class DummyRunnable implements Runnable
 {
     public int count = 0;        
@@ -278,7 +296,8 @@ public class TestJobManager
     
     @Test public void testTailRemove()
     {
-        JobManager jm = new JobManager();        
+        
+        JobManager jm = new JobManager();                        
         DummyCustom dc1 = new DummyCustom(false);
         DummyCustom dc2 = new DummyCustom(false);
         DummyCustom dc3 = new DummyCustom(false);
@@ -330,5 +349,73 @@ public class TestJobManager
         Assert.assertEquals("DC1 add    (2)", 1, dc1.cnt_add);
         Assert.assertEquals("DC2 finish (2)", 1, dc1.cnt_finish);        
     }    
+    
+    
+    @Test public void testRemoveFromWithin() 
+    {        
+        // remove jobs while inside the another job
+        
+        JobManager jm = new JobManager();
+                
+        DummyRunnable r0 = new DummyRunnable();
+        DummyRunnable r1 = new DummyRunnable();
+        DummyRunnable r2 = new DummyRunnable();
+        DummyRunnable r3 = new DummyRunnable();
+        DummyRunnable r4 = new DummyRunnable();
+        
+        DummyListener l0 = new DummyListener(100, 0, null, null);
+        DummyListener l1 = new DummyListener(101, 0, null, null);
+        DummyListener l2 = new DummyListener(102, 0, null, null);
+        DummyListener l3 = new DummyListener(103, 0, null, null);
+        DummyListener l4 = new DummyListener(104, 0, null, null);
+        
+        
+        Job j_r0 = jm.add(r0, 10);
+        Job j_r1 = jm.add(r1, 20);
+        Job j_r2 = jm.add(r2, 30);
+        Job j_r3 = jm.add(r3, 40);
+        Job j_r4 = jm.add(r4, 50);
+        
+        Job j_l0 = jm.add(l0, 10, 100, 0, null, null);
+        Job j_l1 = jm.add(l1, 20, 101, 0, null, null);
+        Job j_l2 = jm.add(l2, 30, 102, 0, null, null);
+        Job j_l3 = jm.add(l3, 40, 103, 0, null, null);
+        Job j_l4 = jm.add(l4, 50, 104, 0, null, null);
+        
+        // jobs to remove
+        RemoveListener r_r2 = new RemoveListener(jm);
+        RemoveListener r_r3 = new RemoveListener(jm);        
+        RemoveListener r_l2 = new RemoveListener(jm);
+        RemoveListener r_l3 = new RemoveListener(jm);
+        
+        jm.add(r_r2, 15, 0, 0, j_r2, null);
+        jm.add(r_r3, 15, 0, 0, j_r3, null);
+        jm.add(r_l2, 15, 0, 0, j_l2, null);
+        jm.add(r_l3, 15, 0, 0, j_l3, null);
+        
+        for(int i = 0; i < 100; i++)
+            jm.service(5);
+        
+        // remove jobs
+        Assert.assertEquals("Ran r_r2",  r_r2.count, 1);
+        Assert.assertEquals("Ran r_r3",  r_r3.count, 1);
+        Assert.assertEquals("Ran r_l2",  r_l2.count, 1);
+        Assert.assertEquals("Ran r_l3",  r_l3.count, 1);
+        
+        // runnables
+        Assert.assertEquals("Runnable r0", r0.count, 1);
+        Assert.assertEquals("Runnable r1", r1.count, 1);
+        Assert.assertEquals("Runnable r2", r2.count, 0);
+        Assert.assertEquals("Runnable r3", r3.count, 0);
+        Assert.assertEquals("Runnable r4", r4.count, 1);
+        
+        // messages
+        Assert.assertEquals("ML l0", l0.count, 1);
+        Assert.assertEquals("ML l1", l1.count, 1);
+        Assert.assertEquals("ML l2", l2.count, 0);
+        Assert.assertEquals("ML l3", l3.count, 0);
+        Assert.assertEquals("ML l4", l4.count, 1);
+    }
+    
      
 }
