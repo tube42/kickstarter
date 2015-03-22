@@ -13,7 +13,7 @@
   </target>
   
   <target name="compile" depends="init" >
-    <javac srcdir="${src}" destdir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" excludes="se/tube42/test/**"/>
   </target>
   
   <target name="dist" depends="compile" >
@@ -24,10 +24,11 @@
     <javadoc sourcepath="${src}" destdir="docs" packagenames="se.tube42.lib.ks.*" />
   </target>
   
-  <target name="test" depends="compile" >    
-       
-    <junit haltonerror="true" haltonfailure="true" >      
-      <classpath path="${build}" />         
+  <target name="test" depends="init">
+    <javac srcdir="${src}" destdir="${build}" />     <!-- compiles all, test included -->
+
+    <junit haltonerror="true" haltonfailure="true" >
+      <classpath path="${build}" />
             
       <formatter type="brief" usefile="false" />
       
